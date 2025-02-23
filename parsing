@@ -1,0 +1,31 @@
+import json
+
+import requests
+from bs4 import BeautifulSoup
+
+
+list_product = []
+for count in range(1, 32):
+    url = f'https://glavsnab.net/santehnika/smesiteli/smesiteli-dlya-moek.html?p={count}'
+    r = requests.get(url=url)
+    soup = BeautifulSoup(r.text, 'lxml')
+    products = soup.find_all('div', class_='product-card')
+    for product in products:
+        name = product.get('data-product-name')
+        skey = product.find('span', class_='product-card__key').text
+        name_elem = product.find('div', class_='product-card__name')
+        link = name_elem.find('a').get('href')
+        price_elem = product.find('span', itemprop='price')
+        if price_elem:
+            price = price_elem.get('content')
+        else:
+            price = 'По запросу'
+        list_product.append({
+            'id': skey,
+            'name': name,
+            'link': link,
+            'price': price
+        })
+with open('file.json', 'w') as file:
+    json.dump(list_product, file, indent=4, ensure_ascii=False)
+
